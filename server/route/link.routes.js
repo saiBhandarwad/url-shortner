@@ -1,4 +1,4 @@
-const { getLinkById, getAllLinks, createLink } = require("../controller/linkController")
+const {  getAllLinks, createLink, getLinkByShortCode, getLinkById } = require("../controller/link.controller")
 
 const router = require("express").Router()
 

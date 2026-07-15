@@ -3,7 +3,7 @@ const auth = require("../middleware/auth.middleware")
 const router = require("express").Router()
 
 router
-    .get("/", auth, getAllUsers)
+    // .get("/", auth, getAllUsers)
     .get("/:id", auth, getUserById)
     .post("/signup", createUser)
     .post("/login", loginUser)

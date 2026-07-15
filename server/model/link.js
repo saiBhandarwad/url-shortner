@@ -6,10 +6,10 @@ const linkSchema = mongoose.Schema({
         type: String
     },
     shortCode: {
-        type: String
-    },
-    shortUrl: {
         type: String,
+        unique: true,
+        index: true
+
     },
 
     owner: {
@@ -32,6 +32,10 @@ const linkSchema = mongoose.Schema({
 
     lastVisitedAt: Date,
 
+
+}, {
+    timestamps: true,
+    versionKey: false,
 })
 
-module.exports = mongoose.model("link" , linkSchema)
+module.exports = mongoose.model("link", linkSchema)
