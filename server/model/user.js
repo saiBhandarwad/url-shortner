@@ -1,4 +1,3 @@
-const { Timestamp } = require("mongodb")
 const mongoose = require("mongoose")
 
 const userSchema = mongoose.Schema({
@@ -34,6 +33,6 @@ const userSchema = mongoose.Schema({
     updatedAt: {
         type: Date
     }
-}, { timeStamp: true })
+}, { Timestamp: true })
 
-module.exports = mongoose.model("user", userSchema)
+module.exports = new mongoose.model("user", userSchema)

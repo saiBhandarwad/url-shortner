@@ -7,7 +7,8 @@ const auth = async (req, res, next) => {
 
     try {
         const accessToken = req.headers['authorization'].split(" ")[1]
-        const decoded = await jwt.verify(accessToken, process.env.JWT_SECRET_KEY)
+        const decoded = await jwt.verify(accessToken, process.env.ACCESS_SECRET_KEY)
+        
         next()
     } catch (error) {
         res.status(403).json({ error: 'Invalid or expired token.' });
