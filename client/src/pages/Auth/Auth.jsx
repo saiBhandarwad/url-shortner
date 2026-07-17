@@ -6,6 +6,9 @@ import { Eye, EyeOff, Link2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Seo from "../../components/common/Seo";
+import { signup } from "../../api/auth.api";
+import { toast } from "sonner";
+
 const schemas = {
   login: z.object({
     email: z.string().email("Enter a valid email"),
@@ -29,16 +32,33 @@ export default function Auth({ type }) {
   const {
     register,
     handleSubmit,
+    watch,
+    getValues,
     formState: { errors },
   } = useForm({ resolver: zodResolver(schemas[type]) });
-  const submit = (data) => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (isForgot) return setSent(true);
-      login(data);
-      go("/dashboard");
-    }, 650);
+  const submit = async (data) => {
+    const { name, email, password } = watch()
+    console.log({ name, email, password });
+
+    try {
+      const response = await signup({ name, email, password })
+      localStorage.setItem("accessToken", response.data?.data?.accessToken)
+      if (response.data.success) {
+        toast.success("Account created successfully!");
+      }
+      
+      navigate("/login");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
+      );
+    }
+    // setTimeout(() => {
+    //   setLoading(false);
+    //   if (isForgot) return setSent(true);
+    //   login(data);
+    //   go("/dashboard");
+    // }, 650);
   };
   const title = isSignup
     ? "Create your workspace"

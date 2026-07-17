@@ -1,6 +1,7 @@
 require("dotenv").config()
 const connectDB = require("./config/db")
 const express = require("express")
+const cors = require("cors");
 const app = express()
 const PORT = 8000
 const mongo_url = process.env.MONGO_URL
@@ -12,6 +13,14 @@ const { getLinkByShortCode } = require("./route/redirect.routes")
 // connecting to mongoDB database
 connectDB(mongo_url)
 // middlewares
+app.use(
+    cors({
+        origin: process.env.CLIENT_URL,
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
