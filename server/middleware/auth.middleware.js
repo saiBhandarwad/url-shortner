@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require("jsonwebtoken")
 const ApiError = require("../utils/ApiError")
 
-const auth = async (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
 
     try {
         const accessToken = req.headers['authorization'].split(" ")[1]
@@ -25,4 +25,4 @@ const auth = async (req, res, next) => {
 
 }
 
-module.exports = auth
+module.exports = verifyJWT

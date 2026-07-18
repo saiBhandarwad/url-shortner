@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,7 @@ import { Eye, EyeOff, Link2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Seo from "../../components/common/Seo";
-import { signup } from "../../api/auth.api";
+import { getMe, login, signup } from "../../api/auth.api";
 import { toast } from "sonner";
 
 const schemas = {
@@ -25,10 +25,36 @@ export default function Auth({ type }) {
   const [show, setShow] = useState(false),
     [loading, setLoading] = useState(false),
     [sent, setSent] = useState(false);
-  const { login } = useAuth(),
+  const { loginAuthContext } = useAuth(),
     go = useNavigate();
   const isSignup = type === "signup",
+    isLogin = type === "login",
     isForgot = type === "forgot";
+
+  const fetchCurrentUser = async () => {
+    try {
+      const token =
+        localStorage.getItem("accessToken");
+      if (!token) {
+        return;
+      }
+      const response = await getMe();
+      if (response.data?.success) {
+        console.log({ response });
+        loginAuthContext()
+        // setUser(response.data.data.user);
+        toast.success("logged in successfully!");
+        go("/dashboard")
+      }
+
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   const {
     register,
     handleSubmit,
@@ -37,34 +63,40 @@ export default function Auth({ type }) {
     formState: { errors },
   } = useForm({ resolver: zodResolver(schemas[type]) });
   const submit = async (data) => {
-    const { name, email, password } = watch()
-    console.log({ name, email, password });
-
+    const { name, email, password } = data
     try {
-      const response = await signup({ name, email, password })
-      localStorage.setItem("accessToken", response.data?.data?.accessToken)
-      if (response.data.success) {
-        toast.success("Account created successfully!");
+      if (isSignup) {
+        const response = await signup({ name, email, password })
+        if (response.data.success) {
+          localStorage.setItem("accessToken", response.data?.data?.accessToken)
+          toast.success("Account created successfully!");
+          loginAuthContext()
+          go("/dashboard");
+        }
       }
-      
-      navigate("/login");
+      if (isLogin) {
+        const response = await login({ email, password })
+        if (response.data.success) {
+          localStorage.setItem("accessToken", response.data?.data?.accessToken)
+          toast.success("Welcome back!");
+          loginAuthContext()
+          go("/dashboard");
+        }
+      }
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Something went wrong"
       );
     }
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   if (isForgot) return setSent(true);
-    //   login(data);
-    //   go("/dashboard");
-    // }, 650);
   };
   const title = isSignup
     ? "Create your workspace"
     : isForgot
       ? "Reset your password"
       : "Welcome back";
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
   return (
     <div className="grid min-h-screen place-items-center bg-slate-50 p-5 dark:bg-slate-950">
       <Seo title={`${title} — Linklane`} />

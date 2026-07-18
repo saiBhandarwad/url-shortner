@@ -77,6 +77,24 @@ const refreshUser = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { accessToken }, "user logged in successfully"))
 })
 
+const getCurrentUser = async (req, res) => {
+    const user = await User.findById(req.userData.data.id)
+        .select("-password -refreshToken");
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { user },
+            "Current user fetched successfully."
+        )
+    );
+};
+
+
 module.exports = {
-    getUserById, getAllUsers, createUser, loginUser, refreshUser
+    getUserById, getAllUsers, createUser, loginUser, refreshUser, getCurrentUser
 }
