@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { Link2 } from "lucide-react";
 import ThemeToggle from "../ui/ThemeToggle";
+import { useAuth } from "../../context/AuthContext";
 const nav = [
   ["Features", "/#features"],
   ["Pricing", "/pricing"],
@@ -18,6 +19,7 @@ export const Brand = () => (
   </Link>
 );
 export default function PublicLayout({ children }) {
+  const { user } = useAuth();
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-transparent bg-slate-50/80 backdrop-blur-lg dark:bg-slate-950/80">
@@ -36,9 +38,9 @@ export default function PublicLayout({ children }) {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Link className="btn hidden sm:inline-flex" to="/login">
+            {!user && <Link className="btn hidden sm:inline-flex" to="/login">
               Log in
-            </Link>
+            </Link>}
             <Link className="btn-primary px-3 sm:px-4" to="/signup">
               Start free
             </Link>

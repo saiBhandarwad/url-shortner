@@ -3,7 +3,8 @@ const {  getAllLinks, createLink, getLinkByShortCode, getLinkById } = require(".
 const router = require("express").Router()
 
 router
-    .get("/", getAllLinks)
+    .post("/", getAllLinks)
+    // .post("/search", searchLinks)
     .get("/:id", getLinkById)
     .post("/createLink", createLink)
 

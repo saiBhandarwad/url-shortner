@@ -8,8 +8,8 @@ const mongo_url = process.env.MONGO_URL
 const userRouter = require("./route/user.routes")
 const linkRouter = require("./route/link.routes")
 const cookieParser = require("cookie-parser")
-const auth = require("./middleware/auth.middleware")
-const { getLinkByShortCode } = require("./route/redirect.routes")
+const { getLinkByShortCode } = require("./route/redirect.routes");
+const verifyJWT = require("./middleware/auth.middleware");
 // connecting to mongoDB database
 connectDB(mongo_url)
 // middlewares
@@ -26,9 +26,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 // routes
-app.get("/:shortCode", getLinkByShortCode)
+app.get("/link/:shortCode", getLinkByShortCode)
 app.use("/api/v1/user", userRouter)
-app.use("/api/v1/links", auth, linkRouter)
+app.use("/api/v1/links", verifyJWT, linkRouter)
 
 // handles error
 app.use((err, req, res, next) => {

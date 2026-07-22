@@ -42,7 +42,6 @@ export default function Auth({ type }) {
       if (response.data?.success) {
         console.log({ response });
         loginAuthContext()
-        // setUser(response.data.data.user);
         toast.success("logged in successfully!");
         go("/dashboard")
       }
@@ -62,6 +61,7 @@ export default function Auth({ type }) {
     getValues,
     formState: { errors },
   } = useForm({ resolver: zodResolver(schemas[type]) });
+  
   const submit = async (data) => {
     const { name, email, password } = data
     try {

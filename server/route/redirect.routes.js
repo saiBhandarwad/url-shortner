@@ -1,5 +1,8 @@
+const Link = require("../model/link.model")
 const getLinkByShortCode = async (req, res) => {
     const shortCode = req.params.shortCode
+    console.log({shortCode});
+    
     if (!shortCode) throw new ApiError(400, "ShortCode is missing in request.")
     const link = await Link.findOne({ shortCode })
     if (!link) throw new ApiError(404, "No such shortCode available")

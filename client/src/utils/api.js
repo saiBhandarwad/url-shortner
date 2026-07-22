@@ -1,1 +1,0 @@
-export const CREATEUSER = "/user/signup"
