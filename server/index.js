@@ -7,6 +7,8 @@ const PORT = 8000
 const mongo_url = process.env.MONGO_URL
 const userRouter = require("./route/user.routes")
 const linkRouter = require("./route/link.routes")
+const dashboardRouter= require("./route/dashboard.routes")
+const analyticsRouter = require("./route/analytics.route")
 const cookieParser = require("cookie-parser")
 const { getLinkByShortCode } = require("./route/redirect.routes");
 const verifyJWT = require("./middleware/auth.middleware");
@@ -27,8 +29,11 @@ app.use(cookieParser())
 
 // routes
 app.get("/link/:shortCode", getLinkByShortCode)
+
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/links", verifyJWT, linkRouter)
+app.use("/api/v1/dashboard", verifyJWT, dashboardRouter)
+app.use("/api/v1/analytics", verifyJWT, analyticsRouter)
 
 // handles error
 app.use((err, req, res, next) => {

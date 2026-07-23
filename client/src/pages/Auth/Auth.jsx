@@ -30,8 +30,12 @@ export default function Auth({ type }) {
   const isSignup = type === "signup",
     isLogin = type === "login",
     isForgot = type === "forgot";
-
+  const {user} = useAuth()
   const fetchCurrentUser = async () => {
+    if(user){
+      go("/dashboard")
+      return
+    }
     try {
       const token =
         localStorage.getItem("accessToken");

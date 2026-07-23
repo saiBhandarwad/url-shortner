@@ -4,7 +4,7 @@ const ApiError = require("../utils/ApiError")
 const ApiResponse = require("../utils/ApiResponse")
 const { nanoid } = require("nanoid")
 const { generateUniqueShortCode } = require("../utils/generateUniqueShortCode")
-const Analytics = require("../model/analtycs.model")
+const Analytics = require("../model/analytics.model")
 
 const getAllLinks = async (req, res) => {
     const { id } = req.userData.data

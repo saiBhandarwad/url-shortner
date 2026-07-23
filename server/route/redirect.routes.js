@@ -1,8 +1,10 @@
 const Link = require("../model/link.model")
+const recordAnalytics = require("../utils/recordAnalytics");
+
 const getLinkByShortCode = async (req, res) => {
     const shortCode = req.params.shortCode
-    console.log({shortCode});
-    
+    console.log({ shortCode });
+
     if (!shortCode) throw new ApiError(400, "ShortCode is missing in request.")
     const link = await Link.findOne({ shortCode })
     if (!link) throw new ApiError(404, "No such shortCode available")
@@ -20,6 +22,7 @@ const getLinkByShortCode = async (req, res) => {
         }
     );
     // Record analytics (IP, Location of user, browser, device, referrer, timestamp).
+    await recordAnalytics(req, link)
     return res.redirect(link.originalUrl)
 }
 

@@ -111,7 +111,7 @@ export default function Links() {
                       </button>
                       <button>
                         <Link
-                          to={l["originalUrl"]}
+                          to={import.meta.env.VITE_API_BASE_URL + "/link/" + l["shortCode"]}
                           target="_blank"
                         >
                           <ExternalLink size={16} />

@@ -12,29 +12,60 @@ import { chartData, links } from "../../constants/data";
 import StatCard from "../../components/ui/StatCard";
 import Seo from "../../components/common/Seo";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import { getDashboard } from "../../api/dashboard.api";
 export default function Dashboard() {
+  const { user } = useAuth()
+  const [dashboard, setDashboard] = useState({
+    totalLinks: 0,
+    activeLinks: 0,
+    expiredLinks: 0,
+    totalClicks: 0,
+    todayClicks: 0,
+    clicksOverTime: [],
+    topCountries: [],
+    recentLinks: [],
+    topLinks: [],
+  });
+  async function getDashboardDetails() {
+    try {
+      const res = await getDashboard();
+      console.log({res});
+      
+      if (res.data.success) {
+        setDashboard(res.data.data);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load dashboard");
+    }
+  }
+
+  useEffect(() => {
+    getDashboardDetails();
+  }, []);
   return (
     <>
       <Seo title="Dashboard — Linklane" />
       <Title
-        title="Good afternoon, Alex"
+        title={"welcome " + user.name.split(" ")[0]}
         sub="Here’s how your links are performing."
       />
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total links" value="124" trend="8.2%" icon={Link2} />
+        <StatCard label="Total links" value={dashboard.totalLinks} trend="8.2%" icon={Link2} />
         <StatCard
           label="Total clicks"
-          value="18,492"
+          value={dashboard.totalClicks}
           trend="16.8%"
           icon={MousePointer2}
         />
         <StatCard
           label="Today’s clicks"
-          value="1,284"
+          value={dashboard.todayClicks}
           trend="12.4%"
           icon={Activity}
         />
-        <StatCard label="Active links" value="119" trend="3.1%" icon={Radio} />
+        <StatCard label="Active links" value={dashboard.activeLinks} trend="3.1%" icon={Radio} />
       </section>
       <div className="mt-7 grid gap-6 xl:grid-cols-3">
         <section className="card p-5 xl:col-span-2">
