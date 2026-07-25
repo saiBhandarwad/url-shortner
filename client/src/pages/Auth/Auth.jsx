@@ -25,12 +25,16 @@ export default function Auth({ type }) {
   const [show, setShow] = useState(false),
     [loading, setLoading] = useState(false),
     [sent, setSent] = useState(false);
+    
   const { loginAuthContext } = useAuth(),
     go = useNavigate();
+    
   const isSignup = type === "signup",
     isLogin = type === "login",
     isForgot = type === "forgot";
+
   const {user} = useAuth()
+  
   const fetchCurrentUser = async () => {
     if(user){
       go("/dashboard")

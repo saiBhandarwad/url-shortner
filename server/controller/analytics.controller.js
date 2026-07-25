@@ -1,3 +1,4 @@
+const { format } = require("date-fns");
 const Analytics = require("../model/analytics.model");
 const Link = require("../model/link.model");
 const { formatAnalytics } = require("../utils/analytics");
@@ -12,9 +13,17 @@ const getAnalytics = asyncHandler(async (req, res) => {
     last7Days.setDate(last7Days.getDate() - 6);
     last7Days.setHours(0, 0, 0, 0);
 
-
-
-
+    const matchOwner = {
+        $match: {
+            // owner: userId,
+        },
+    };
+    const matchLast7Days = {
+        $match: {
+            // owner: userId,
+            createdAt: { $gte: last7Days },
+        },
+    };
     const [
         clicksByDay,
         audienceByCountry,
@@ -23,14 +32,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
         topLinks,
     ] = await Promise.all([
         Analytics.aggregate([
-            {
-                $match: {
-                    owner: userId,
-                    createdAt: {
-                        $gte: last7Days,
-                    },
-                },
-            },
+            matchLast7Days,
             {
                 $group: {
                     _id: {
@@ -51,11 +53,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
             },
         ]),
         Analytics.aggregate([
-            {
-                $match: {
-                    owner: userId,
-                },
-            },
+            matchOwner,
             {
                 $group: {
                     _id: "$country",
@@ -71,11 +69,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
             },
         ]),
         Analytics.aggregate([
-            {
-                $match: {
-                    owner: userId,
-                },
-            },
+            matchOwner,
             {
                 $group: {
                     _id: "$deviceType",
@@ -86,11 +80,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
             },
         ]),
         Analytics.aggregate([
-            {
-                $match: {
-                    owner: userId,
-                },
-            },
+            matchOwner,
             {
                 $group: {
                     _id: "$browser",
@@ -112,10 +102,27 @@ const getAnalytics = asyncHandler(async (req, res) => {
     const formattedDevices = formatAnalytics(devices, "value")
     const formattedBrowsers = formatAnalytics(browsers, "value")
 
+    const clicksMap = {};
 
+    clicksByDay.forEach((item) => {
+        clicksMap[item._id] = item.clicks;
+    });
+    const formattedClicksOverTime = [];
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(last7Days);
+        date.setDate(last7Days.getDate() + i);
+        const formattedDate = format(date, "yyyy-MM-dd");
+
+        formattedClicksOverTime.push({
+            date: formattedDate,
+            day: date.toLocaleDateString("en-US", { weekday: "short" }), // Mon, Tue...
+            clicks: clicksMap[formattedDate] || 0,
+        });
+    }
     return res.status(200).json(
         new ApiResponse(200, {
-            clicksByDay: formattedClicks,
+            clicksByDay: formattedClicksOverTime,
             audienceByCountry: formattedCountries,
             devices: formattedDevices,
             browsers: formattedBrowsers,

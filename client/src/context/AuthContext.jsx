@@ -22,9 +22,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         return;
       }
-
-      const response = await getMe();
-
+      const response = await getMe();      
       setUser(response.data.data.user);
     } catch (error) {
       setUser(null);

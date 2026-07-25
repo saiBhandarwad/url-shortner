@@ -23,7 +23,54 @@ import {
 import toast from "react-hot-toast";
 import { chartData, countryData } from "../../constants/data";
 import { Title } from "./Dashboard";
+import { getAnalytics } from "../../api/analytics.api";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useDashboard } from "../../context/UserContext";
 export function Analytics() {
+  const [analytics, setAnalytics] = useState({
+    clicksByDay: [],
+    audienceByCountry: [],
+    devices: [],
+    browsers: [],
+    topLinks: [],
+  });
+  const formatData = (arr) => {
+    let totalValueCount = arr.reduce((acc, item) => {
+      return acc += item.value
+    }, 0)
+    let formatedData = arr.map((item) => {
+      let percentage = (item.value / totalValueCount) * 100
+      return [item.name, percentage.toFixed(0).toString().concat("%")]
+    })
+    return formatedData
+  }
+  async function getAnalyticsDetails() {
+    try {
+      const res = await getAnalytics();
+
+      if (res.data.success) {
+        let analyticsData = res.data.data
+
+        let formattedBrowsersData = formatData(analyticsData.browsers)
+        let formattedDevicesData = formatData(analyticsData.devices)
+
+        // convert top links data compatible for frontend logic
+        let formattedTopLinks = analyticsData.topLinks.map((item) => {
+          let url = item.originalUrl.split("://")[1].split("/")[0]
+          let clicks = item.clickCount + " clicks"
+          return [url, clicks,]
+        })
+        setAnalytics({ ...analyticsData, browsers: formattedBrowsersData, topLinks: formattedTopLinks, devices: formattedDevicesData });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load dashboard");
+    }
+  }
+
+  useEffect(() => {
+    getAnalyticsDetails();
+  }, []);
   return (
     <>
       <Title
@@ -33,7 +80,7 @@ export function Analytics() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Chart title="Clicks by day">
           <ResponsiveContainer>
-            <BarChart data={chartData}>
+            <BarChart data={analytics.clicksByDay}>
               <XAxis dataKey="day" />
               <YAxis />
               <Tooltip />
@@ -67,40 +114,28 @@ export function Analytics() {
         {[
           [
             "Devices",
-            [
-              ["Desktop", "62%"],
-              ["Mobile", "31%"],
-              ["Tablet", "7%"],
-            ],
+            analytics.devices,
             Monitor,
           ],
           [
             "Browsers",
-            [
-              ["Chrome", "56%"],
-              ["Safari", "25%"],
-              ["Firefox", "11%"],
-            ],
+            analytics.browsers,
             Globe2,
           ],
           [
             "Top link",
-            [
-              ["/launch", "4,289 clicks"],
-              ["/summer", "1,842 clicks"],
-              ["/github", "984 clicks"],
-            ],
+            analytics.topLinks,
             BarChart3,
           ],
-        ].map(([title, rows, Icon]) => (
+        ].map(([title, rows, Icon], index) => (
           <div className="card p-5" key={title}>
             <div className="flex items-center gap-2 font-bold">
               <Icon size={18} className="text-indigo-600" />
               {title}
             </div>
             <div className="mt-5 space-y-4">
-              {rows.map(([a, b]) => (
-                <div className="flex justify-between text-sm" key={a}>
+              {rows.map(([a, b], index) => (
+                <div className="flex justify-between text-sm" key={index}>
                   <span className="text-slate-500">{a}</span>
                   <span className="font-semibold">{b}</span>
                 </div>
@@ -251,6 +286,8 @@ function Toggle({ label, checked = false }) {
   );
 }
 export function Profile() {
+  const { user } = useAuth()
+  const { dashboard } = useDashboard()
   return (
     <>
       <Title title="Profile" sub="Your public workspace identity." />
@@ -262,9 +299,9 @@ export function Profile() {
           </div>
           <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row">
             <div>
-              <h2 className="text-xl font-bold">Alex Morgan</h2>
+              <h2 className="text-xl font-bold">{user.name}</h2>
               <p className="mt-1 text-sm text-slate-500">
-                alex@linklane.io · Joined June 2026
+                {user.email}
               </p>
             </div>
             <button
@@ -277,19 +314,21 @@ export function Profile() {
             </button>
           </div>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {[
-              ["124", "Links created"],
-              ["18.4k", "Total clicks"],
-              ["3", "Team members"],
-            ].map(([v, l]) => (
-              <div
-                className="rounded-lg bg-slate-50 p-4 dark:bg-slate-950"
-                key={l}
-              >
-                <p className="text-xl font-bold">{v}</p>
-                <p className="mt-1 text-xs text-slate-500">{l}</p>
-              </div>
-            ))}
+            {/* first */}
+            <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-950">
+              <p className="text-xl font-bold">{dashboard.totalLinks}</p>
+              <p className="mt-1 text-xs text-slate-500">Links Created</p>
+            </div>
+            {/* second  */}
+            <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-950">
+              <p className="text-xl font-bold">{dashboard.todayClicks}</p>
+              <p className="mt-1 text-xs text-slate-500">Today's Click</p>
+            </div>
+            {/* third */}
+            <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-950">
+              <p className="text-xl font-bold">{dashboard.totalClicks}</p>
+              <p className="mt-1 text-xs text-slate-500">Total Clicks</p>
+            </div>
           </div>
         </div>
       </section>

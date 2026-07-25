@@ -31,10 +31,12 @@ export default function Dashboard() {
   async function getDashboardDetails() {
     try {
       const res = await getDashboard();
-      console.log({res});
-      
+      console.log({ res });
+
       if (res.data.success) {
         setDashboard(res.data.data);
+        console.log({ res: res.data.data });
+
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load dashboard");
@@ -73,7 +75,7 @@ export default function Dashboard() {
           <p className="muted mt-1">Last 7 days</p>
           <div className="mt-5 h-64">
             <ResponsiveContainer>
-              <AreaChart data={chartData}>
+              <AreaChart data={dashboard.clicksOverTime}>
                 <defs>
                   <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
                     <stop stopColor="#4F46E5" stopOpacity=".28" />
@@ -145,16 +147,20 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {links.slice(0, 3).map((l) => (
-                <tr className="border-b last:border-0" key={l[1]}>
-                  <td className="max-w-48 truncate px-5 py-4">{l[0]}</td>
+              {dashboard.recentLinks.map((l) => (
+                <tr className="border-b last:border-0" key={l["_id"]}>
+                  <td className="max-w-48 truncate px-5 py-4">{l["originalUrl"]}</td>
                   <td className="px-5 py-4 font-medium text-indigo-600">
-                    {l[1]}
+                    {import.meta.env.VITE_API_BASE_URL + "/" + l["shortCode"]}
                   </td>
-                  <td className="px-5 py-4">{l[2]}</td>
+                  <td className="px-5 py-4">{l["clickCount"]}</td>
                   <td className="px-5 py-4">
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                      {l[3]}
+                    <span className={`rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold 
+                    ${l.isActive
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-red-50 text-red-700"
+                      }`}>
+                      {l["isActive"] === true ? "Active" : "In Active"}
                     </span>
                   </td>
                 </tr>
