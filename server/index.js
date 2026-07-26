@@ -1,3 +1,6 @@
+const dns = require("dns");
+// Force Google DNS
+dns.setServers(["8.8.8.8"]);
 require("dotenv").config()
 const connectDB = require("./config/db")
 const express = require("express")
