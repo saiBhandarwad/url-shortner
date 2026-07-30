@@ -21,7 +21,7 @@ connectDB(mongo_url)
 // middlewares
 app.use(
     cors({
-        origin: process.env.CLIENT_URL,
+        origin: [process.env.CLIENT_URL, "https://linklane-nine.vercel.app"],
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
