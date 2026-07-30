@@ -1,5 +1,6 @@
 import {
     createContext,
+    useCallback,
     useContext,
     useEffect,
     useState,
@@ -8,9 +9,9 @@ import { toast } from "sonner";
 import { getDashboard } from "../api/dashboard.api";
 import { useAuth } from "./AuthContext";
 
-const UserContext = createContext();
+const DashboardContext = createContext();
 
-export const UserProvider = ({ children }) => {
+export const DashboardProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const {user} = useAuth()
     const [dashboard, setDashboard] = useState({
@@ -24,19 +25,20 @@ export const UserProvider = ({ children }) => {
         recentLinks: [],
         topLinks: [],
     });
-
     async function getDashboardDetails() {
         if(!user){
             return
         }
         try {
             const res = await getDashboard();
-            console.log({ res });
 
             if (res.data.success) {
-                setDashboard(res.data.data);
-                console.log({ res: res.data.data });
-
+                let totalClicks = res.data.data.topCountries.reduce((acc, elem) => acc += elem.clicks, 0)
+                let formattedTopCountries = res.data.data.topCountries.map((elem) => {
+                    let clicksPercentage = (elem.clicks * 100) / totalClicks
+                    return [elem.country, clicksPercentage.toFixed(2)]
+                })
+                setDashboard({ ...res.data.data, topCountries: formattedTopCountries })
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to load dashboard");
@@ -45,18 +47,19 @@ export const UserProvider = ({ children }) => {
 
     useEffect(() => {
         getDashboardDetails();
-    }, []);
+    }, [user]);
 
 
     return (
-        <UserContext.Provider
+        <DashboardContext.Provider
             value={{
-                dashboard
+                dashboard,
+                getDashboardDetails
             }}
         >
             {children}
-        </UserContext.Provider>
+        </DashboardContext.Provider>
     );
 };
 
-export const useDashboard = () => useContext(UserContext);
+export const useDashboard = () => useContext(DashboardContext);

@@ -32,6 +32,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
         browsers,
         topLinks,
     ] = await Promise.all([
+        // clicksByDay
         Analytics.aggregate([
             matchLast7Days,
             {
@@ -53,6 +54,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
                 },
             },
         ]),
+        // audienceByCountry
         Analytics.aggregate([
             matchOwner,
             {
@@ -68,7 +70,15 @@ const getAnalytics = asyncHandler(async (req, res) => {
                     clicks: -1,
                 },
             },
+            {
+                $project: {
+                    _id: 0,
+                    country: "$_id",
+                    clicks: 1,
+                },
+            },
         ]),
+        // devices
         Analytics.aggregate([
             matchOwner,
             {
@@ -80,6 +90,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
                 },
             },
         ]),
+        // browsers
         Analytics.aggregate([
             matchOwner,
             {
@@ -91,6 +102,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
                 },
             },
         ]),
+        // topLinks
         Link.find({
             owner: userId,
         })
@@ -99,7 +111,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
             .select("originalUrl shortCode clickCount"),
     ]);
     const formattedClicks = formatAnalytics(clicksByDay, "value")
-    const formattedCountries = formatAnalytics(audienceByCountry, "value")
+    // const formattedCountries = formatAnalytics(audienceByCountry, "value")
     const formattedDevices = formatAnalytics(devices, "value")
     const formattedBrowsers = formatAnalytics(browsers, "value")
 
@@ -124,7 +136,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, {
             clicksByDay: formattedClicksOverTime,
-            audienceByCountry: formattedCountries,
+            audienceByCountry,
             devices: formattedDevices,
             browsers: formattedBrowsers,
             topLinks,

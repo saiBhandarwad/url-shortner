@@ -26,7 +26,7 @@ import { Title } from "./Dashboard";
 import { getAnalytics } from "../../api/analytics.api";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useDashboard } from "../../context/UserContext";
+import { useDashboard } from "../../context/DashboardContext";
 export function Analytics() {
   const [analytics, setAnalytics] = useState({
     clicksByDay: [],
@@ -54,6 +54,12 @@ export function Analytics() {
 
         let formattedBrowsersData = formatData(analyticsData.browsers)
         let formattedDevicesData = formatData(analyticsData.devices)
+        // audience by country 
+        let totalClicks = analyticsData.audienceByCountry.reduce((acc, elem) => acc += elem.clicks, 0)
+        let formattedAudienceByCountry = analyticsData.audienceByCountry.map((elem) => {
+          let clicksPercentage = (elem.clicks * 100 ) / totalClicks 
+          return { name: elem.country, value: Number(clicksPercentage.toFixed(2))}
+        })
 
         // convert top links data compatible for frontend logic
         let formattedTopLinks = analyticsData.topLinks.map((item) => {
@@ -61,7 +67,8 @@ export function Analytics() {
           let clicks = item.clickCount + " clicks"
           return [url, clicks,]
         })
-        setAnalytics({ ...analyticsData, browsers: formattedBrowsersData, topLinks: formattedTopLinks, devices: formattedDevicesData });
+        
+        setAnalytics({ ...analyticsData, audienceByCountry: formattedAudienceByCountry, browsers: formattedBrowsersData, topLinks: formattedTopLinks, devices: formattedDevicesData });
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load dashboard");
@@ -92,13 +99,13 @@ export function Analytics() {
           <ResponsiveContainer>
             <PieChart>
               <Pie
-                data={countryData}
+                data={analytics.audienceByCountry}
                 dataKey="value"
                 nameKey="name"
                 innerRadius={55}
                 outerRadius={85}
               >
-                {countryData.map((_, i) => (
+                {analytics.audienceByCountry.map((_, i) => (
                   <Cell
                     key={i}
                     fill={["#4F46E5", "#7C3AED", "#22C55E", "#94A3B8"][i]}
@@ -287,7 +294,11 @@ function Toggle({ label, checked = false }) {
 }
 export function Profile() {
   const { user } = useAuth()
-  const { dashboard } = useDashboard()
+  const { dashboard, getDashboardDetails } = useDashboard()
+  useEffect(() => {
+    getDashboardDetails()
+  }, [])
+  
   return (
     <>
       <Title title="Profile" sub="Your public workspace identity." />

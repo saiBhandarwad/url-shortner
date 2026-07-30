@@ -145,6 +145,9 @@ export default function Links() {
       </div>
       <CreateLinkModal
         open={showModal}
+        refreshLinks={()=>{
+          getAllLinks()
+        }}
         onClose={() => setShowModal(false)}
       />
     </>

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axiosInstance from "../../api/axios";
 import { createLink } from "../../api/link.api";
+import { toast } from "sonner";
 
 const createLinkSchema = z.object({
     originalUrl: z
@@ -28,7 +29,7 @@ const createLinkSchema = z.object({
         .or(z.literal("")),
 });
 
-export default function CreateLinkModal({ open, onClose }) {
+export default function CreateLinkModal({ open, onClose, refreshLinks }) {
     const {
         register,
         handleSubmit,
@@ -48,11 +49,19 @@ export default function CreateLinkModal({ open, onClose }) {
         if (!open) reset();
     }, [open, reset]);
 
-    const onSubmit = async (data) => {        
-        const response = await createLink({...data})
-        console.log({data, response});
-        
-        onClose();
+    const onSubmit = async (data) => {
+        try {
+            const response = await createLink({ ...data })
+            if (response.data.success) {
+                toast.success("Short Url Created!")
+                refreshLinks()
+            }
+
+        } catch (error) {
+            toast.error(error.message)
+        } finally {
+            onClose();
+        }
     };
 
     if (!open) return null;
