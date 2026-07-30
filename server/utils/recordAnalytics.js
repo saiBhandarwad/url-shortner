@@ -13,7 +13,7 @@ const recordAnalytics = async (req, link) => {
 
     const referrer = req.headers.referer || "Direct";
 
-    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress;
     let data;
     try {
         const response = await fetch(`https://ipwho.is/${ip}`);
