@@ -18,7 +18,7 @@ const recordAnalytics = async (req, link) => {
     try {
         const response = await fetch(`https://ipwho.is/${ip}`);
         data = await response.json();
-        console.log({ data });
+        console.log({ dataIP : data });
     } catch (err) {
         logger.error({
             message: "IP lookup failed",
