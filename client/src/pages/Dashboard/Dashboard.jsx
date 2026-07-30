@@ -151,7 +151,7 @@ export default function Dashboard() {
                 <tr className="border-b last:border-0" key={l["_id"]}>
                   <td className="max-w-48 truncate px-5 py-4">{l["originalUrl"]}</td>
                   <td className="px-5 py-4 font-medium text-indigo-600">
-                    {import.meta.env.VITE_API_BASE_URL + "/" + l["shortCode"]}
+                    {import.meta.env.VITE_API_BASE_URL + "/link/" + l["shortCode"]}
                   </td>
                   <td className="px-5 py-4">{l["clickCount"]}</td>
                   <td className="px-5 py-4">

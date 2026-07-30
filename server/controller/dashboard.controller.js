@@ -3,6 +3,7 @@ const Analytics = require("../model/analytics.model");
 const Link = require("../model/link.model");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
+const { default: mongoose } = require("mongoose");
 
 const getDashboard = asyncHandler(async (req, res) => {
     const userId = req.userData.data.id;
@@ -12,7 +13,19 @@ const getDashboard = asyncHandler(async (req, res) => {
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 6);
     last7Days.setHours(0, 0, 0, 0);
-    
+
+    const matchOwner = {
+        $match: {
+            owner: new mongoose.Types.ObjectId(userId),
+        },
+    };
+    const matchLast7Days = {
+        $match: {
+            owner: new mongoose.Types.ObjectId(userId),
+            createdAt: { $gte: last7Days },
+        },
+    };
+
     const [
         totalLinks,
         activeLinks,
@@ -24,19 +37,23 @@ const getDashboard = asyncHandler(async (req, res) => {
         topCountries
 
     ] = await Promise.all([
-        Link.countDocuments({ owner: userId }),
+        // totalLinks,
+        Link.countDocuments({ owner: new mongoose.Types.ObjectId(userId), }),
 
+        // activeLinks,
         Link.countDocuments({
-            owner: userId,
+            owner: new mongoose.Types.ObjectId(userId),
             isActive: true,
         }),
 
+        // expiredLinks,        
         Link.countDocuments({
-            owner: userId,
+            owner: new mongoose.Types.ObjectId(userId),
             expiresAt: { $lt: new Date() },
         }),
-
+        // totalClicksResult,
         Link.aggregate([
+            matchOwner,
             {
                 $group: {
                     _id: null,
@@ -46,14 +63,17 @@ const getDashboard = asyncHandler(async (req, res) => {
                 },
             },
         ]),
+
+        // todayClicks,
         Analytics.countDocuments({
-            owner: userId,
+            owner: new mongoose.Types.ObjectId(userId),
             createdAt: {
                 $gte: startOfToday,
             },
         }),
 
-        Link.find({ owner: userId })
+        // recentLinks,
+        Link.find({ owner: new mongoose.Types.ObjectId(userId) })
             .sort({ createdAt: -1 })
             .limit(3)
             .select(
@@ -61,14 +81,7 @@ const getDashboard = asyncHandler(async (req, res) => {
             ),
         // Clicks over last 7 days
         Analytics.aggregate([
-            {
-                $match: {
-                    // owner: userId,
-                    createdAt: {
-                        $gte: last7Days,
-                    },
-                },
-            },
+            matchLast7Days,
             {
                 $group: {
                     _id: {
@@ -91,14 +104,7 @@ const getDashboard = asyncHandler(async (req, res) => {
 
         // Top countries
         Analytics.aggregate([
-            {
-                $match: {
-                    // owner: userId,
-                    country: {
-                        $ne: null,
-                    },
-                },
-            },
+            matchOwner,
             {
                 $group: {
                     _id: "$country",
@@ -144,7 +150,7 @@ const getDashboard = asyncHandler(async (req, res) => {
             clicks: clicksMap[formattedDate] || 0,
         });
     }
-   
+
 
     return res.status(200).json(new ApiResponse(200, {
         totalLinks,

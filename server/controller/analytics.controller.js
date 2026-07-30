@@ -4,6 +4,7 @@ const Link = require("../model/link.model");
 const { formatAnalytics } = require("../utils/analytics");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
+const { default: mongoose } = require("mongoose");
 
 const getAnalytics = asyncHandler(async (req, res) => {
     const userId = req.userData.data.id;
@@ -15,12 +16,12 @@ const getAnalytics = asyncHandler(async (req, res) => {
 
     const matchOwner = {
         $match: {
-            // owner: userId,
+            owner: new mongoose.Types.ObjectId(userId),
         },
     };
     const matchLast7Days = {
         $match: {
-            // owner: userId,
+            owner: new mongoose.Types.ObjectId(userId),
             createdAt: { $gte: last7Days },
         },
     };

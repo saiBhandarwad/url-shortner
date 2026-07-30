@@ -25,6 +25,7 @@
     "multer": "^2.2.0",
     "nanoid": "^6.0.0",
     "nodemon": "^3.1.14",
-    "ua-parser-js": "^2.0.10"
+    "ua-parser-js": "^2.0.10",
+    "winston": "^3.19.0"
   }
 }

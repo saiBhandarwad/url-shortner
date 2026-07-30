@@ -1,5 +1,6 @@
 const Analytics = require("../model/analytics.model")
 const UAParser = require("ua-parser-js");
+const logger = require("../utils/logger");
 
 const recordAnalytics = async (req, link) => {
     const parser = new UAParser(req.headers["user-agent"]);
@@ -13,11 +14,19 @@ const recordAnalytics = async (req, link) => {
     const referrer = req.headers.referer || "Direct";
 
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-    const response = await fetch(`http://ip-api.com/json/${ip}`);
-    const data = await response.json();
-    console.log({ data });
-    const country = data.country
-    const city = data.city
+    try {
+        const response = await fetch(`https://ipwho.is/${ip}`);
+        const data = await response.json();
+        console.log({ data });
+    } catch (err) {
+        logger.error({
+            message: "IP lookup failed",
+            error: err.message,
+            stack: err.stack,
+        });
+    }
+    const country = data?.country
+    const city = data?.city
 
     await Analytics.create({
         owner: link.owner,
@@ -38,6 +47,19 @@ const recordAnalytics = async (req, link) => {
 
         userAgent: req.headers["user-agent"],
     });
+    logger.info({
+        message: "Visitor",
+        shortCode: link.shortCode,
+        owner: link.owner,
+        ip,
+        browser,
+        os,
+        device,
+        country,
+        city,
+        referrer,
+    });
 };
+
 
 module.exports = recordAnalytics

@@ -15,6 +15,7 @@ const analyticsRouter = require("./route/analytics.route")
 const cookieParser = require("cookie-parser")
 const { getLinkByShortCode } = require("./route/redirect.routes");
 const verifyJWT = require("./middleware/auth.middleware");
+const requestLogger = require("./middleware/requestLogger");
 // connecting to mongoDB database
 connectDB(mongo_url)
 // middlewares
@@ -29,7 +30,7 @@ app.use(
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
-
+// app.use(requestLogger)
 // routes
 app.get("/link/:shortCode", getLinkByShortCode)
 
