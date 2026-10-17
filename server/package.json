@@ -25,6 +25,7 @@
     "multer": "^2.2.0",
     "nanoid": "^6.0.0",
     "nodemon": "^3.1.14",
+    "redis": "^6.3.0",
     "ua-parser-js": "^2.0.10",
     "winston": "^3.19.0"
   }
