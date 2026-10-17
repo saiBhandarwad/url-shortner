@@ -1,6 +1,3 @@
-const dns = require("dns");
-// Force Google DNS
-dns.setServers(["8.8.8.8"]);
 require("dotenv").config()
 const connectDB = require("./config/db")
 const express = require("express")
@@ -16,8 +13,11 @@ const cookieParser = require("cookie-parser")
 const { getLinkByShortCode } = require("./route/redirect.routes");
 const verifyJWT = require("./middleware/auth.middleware");
 const requestLogger = require("./middleware/requestLogger");
+const { connectRedis } = require("./config/redis");
+const rateLimiter = require("./middleware/rateLimitter");
 // connecting to mongoDB database
 connectDB(mongo_url)
+connectRedis()
 // middlewares
 app.use(
     cors({
@@ -25,6 +25,12 @@ app.use(
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
+app.use(
+    rateLimiter({
+        limit: 100,
+        windowSeconds: 60,
     })
 );
 app.use(express.json())
